@@ -1,5 +1,7 @@
 import os
 import json
+import socket
+
 
 def get_file_info(dir_path):
     file_info = {}
@@ -15,3 +17,27 @@ file_info = get_file_info(dir_path)
 
 with open('file_info.json', 'w') as f:
     json.dump(file_info, f, indent=4)
+
+def handle_command(command):
+    if command.startswith("set_root_folder"):
+        new_root_folder = command.split()[1]
+        file_info = get_file_info(new_root_folder)
+        with open('new_file_info.json', 'w') as f:
+            json.dump(file_info, f, indent=4)
+        return "New root folder set and file info saved."
+    else:
+        return "Invalid command."
+
+
+s = socket.socket()
+host = socket.gethostname()
+port = 12345
+s.bind((host, port))
+s.listen(5)
+
+while True:
+    c, addr = s.accept()
+    command = c.recv(1024).decode()
+    response = handle_command(command)
+    c.send(response.encode())
+    c.close()
